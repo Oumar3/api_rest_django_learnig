@@ -14,4 +14,9 @@ def product_view(request):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
-   
+    product = Product.objects.all()
+    data = {}
+    if product:
+        data = ProductSerializer(product,many = True)
+        print(data)
+    return Response(data.data)
