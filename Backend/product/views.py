@@ -23,6 +23,11 @@ class ProductListViews(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_queryset(self):
+        # queryset = self.queryset
+        # print(self.kwargs.get('name'))
+        return super().get_queryset().filter(price__lt=100)
+
 class ProductDeleteViews(generics.DestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
