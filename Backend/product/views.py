@@ -6,7 +6,7 @@ from django.forms.models import model_to_dict
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import ProductSerializer
-from rest_framework import generics,status
+from rest_framework import generics,status,mixins
 
 
 class ProductRetriveViews(generics.RetrieveAPIView):
@@ -23,10 +23,7 @@ class ProductListViews(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    def get_queryset(self):
-        # queryset = self.queryset
-        # print(self.kwargs.get('name'))
-        return super().get_queryset().filter(price__lt=100)
+
 
 class ProductDeleteViews(generics.DestroyAPIView):
     queryset = Product.objects.all()
@@ -52,3 +49,31 @@ class ProductUpdateViews(generics.UpdateAPIView):
 #         data = ProductSerializer(product,many = True)
 #         print(data)
 #     return Response(data.data)
+
+
+class ProductViewsMixing(
+    generics.GenericAPIView,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin
+    ):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = "pk"
+
+    def perform_create(self, serializer):
+        name = serializer.validated_data.get("name")
+        if name is None:
+            name = "Je suis nulle"
+        serializer.save(name=name)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def get(self,request,*args, **kwargs):
+        pk = kwargs.get('pk')
+        if pk is not None:
+            return self.retrieve(request,*args, **kwargs)
+        return self.list(request,*args, **kwargs)
