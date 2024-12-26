@@ -1,13 +1,7 @@
-from django.shortcuts import render
-from django.http import JsonResponse
 from .models import Product
-import json
-from django.forms.models import model_to_dict
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from .serializers import ProductSerializer
-from rest_framework import generics,status,mixins
-
+from rest_framework import authentication,generics,status,mixins,permissions
+from .permissions import IsPerission
 
 class ProductRetriveViews(generics.RetrieveAPIView):
     queryset = Product.objects.all()
@@ -15,13 +9,18 @@ class ProductRetriveViews(generics.RetrieveAPIView):
     lookup_field = 'pk'
 
 
-class ProductCreatViews(generics.CreateAPIView):
+class ListProductViewsMixing(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    authentication_classes = [authentication.SessionAuthentication,authentication.TokenAuthentication]
+    permission_classes = [IsPerission]
 
-class ProductListViews(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
 
 
@@ -62,6 +61,8 @@ class ProductViewsMixing(
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = "pk"
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.SessionAuthentication]
 
     def perform_create(self, serializer):
         name = serializer.validated_data.get("name")

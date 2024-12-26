@@ -1,8 +1,8 @@
 import requests
 
-Endpoint = "http://127.0.0.1:8000/api/product/"
+Endpoint = "http://127.0.0.1:8000/api/create-product/"
 
-re = requests.post(Endpoint,json={"name":"Livre","price":750})
+re = requests.get(Endpoint)
 
 
 print(re.json())
