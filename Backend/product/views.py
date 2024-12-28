@@ -1,12 +1,29 @@
+from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import render
+from django.conf.urls import handler404
+from .forms import ProductForm,ProductModelForm
 from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import authentication,generics,status,mixins,permissions
 from .permissions import IsPerission
 
+from django.views.decorators.csrf import csrf_exempt
+def product_view(request,*args, **kwargs):
+    if request.method == "POST":
+        form = ProductModelForm(request.POST)
+        if form.is_valid():
+            print(form.cleaned_data)
+            
+    else:
+        form = ProductModelForm()
+    return render(request,'index.html',{'form':form})
+
 class ProductRetriveViews(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'pk'
+
+    
 
 
 class ListProductViewsMixing(generics.ListCreateAPIView):
@@ -75,6 +92,12 @@ class ProductViewsMixing(
 
     def get(self,request,*args, **kwargs):
         pk = kwargs.get('pk')
+        print(pk,kwargs)
         if pk is not None:
             return self.retrieve(request,*args, **kwargs)
         return self.list(request,*args, **kwargs)
+    
+
+def error_404(request,exception):
+    return render(request,'pagenotfound.html')
+
